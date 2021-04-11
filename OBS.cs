@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PowerPointToOBSSceneSwitcher
+namespace SceneSwitcher
 {
 
 	public class ObsLocal : IDisposable

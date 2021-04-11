@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Office.Interop.PowerPoint;
 //Thanks to CSharpFritz and EngstromJimmy for their gists, snippets, and thoughts.
 
-namespace PowerPointToOBSSceneSwitcher
+namespace SceneSwitcher
 {
     class Program
     {
