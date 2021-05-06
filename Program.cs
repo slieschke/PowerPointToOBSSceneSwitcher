@@ -7,10 +7,10 @@ using Microsoft.Office.Interop.PowerPoint;
 
 namespace SceneSwitcher {
     class Program {
-        private static Application ppt = new Microsoft.Office.Interop.PowerPoint.Application();
+        private static readonly Application ppt = new Microsoft.Office.Interop.PowerPoint.Application();
         private static ObsLocal OBS;
 
-        static async Task Main(string[] args) {
+        static async Task Main() {
             Console.Write("Connecting to PowerPoint...");
             ppt.SlideShowNextSlide += App_SlideShowNextSlide;
             Console.WriteLine("connected");
@@ -25,7 +25,7 @@ namespace SceneSwitcher {
             Console.ReadLine();
         }
 
-        async static void App_SlideShowNextSlide(SlideShowWindow Wn) {
+        static void App_SlideShowNextSlide(SlideShowWindow Wn) {
             if (Wn != null) {
                 Console.WriteLine($"Moved to Slide Number {Wn.View.Slide.SlideNumber}");
                 //Text starts at Index 2 ¯\_(ツ)_/¯
@@ -45,7 +45,7 @@ namespace SceneSwitcher {
                             try {
                                 sceneHandled = OBS.ChangeScene(line);
                             } catch (Exception ex) {
-                                Console.WriteLine($"  ERROR: {ex.Message.ToString()}");
+                                Console.WriteLine($"  ERROR: {ex.Message}");
                             }
                         } else {
                             Console.WriteLine($"  WARNING: Multiple scene definitions found.  I used the first and have ignored \"{line}\"");
