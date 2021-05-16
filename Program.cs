@@ -54,24 +54,6 @@
                             Console.WriteLine($"  WARNING: Multiple scene definitions found. I used the first and have ignored \"{line}\"");
                         }
                     }
-
-                    if (line.StartsWith("OBSDEF:")) {
-                        obs.DefaultScene = line.Substring(7).Trim();
-                        Console.WriteLine($"  Setting the default OBS scene to \"{obs.DefaultScene}\"");
-                    }
-
-                    if (line.StartsWith("**START")) {
-                        obs.StartRecording();
-                    }
-
-                    if (line.StartsWith("**STOP")) {
-                        obs.StopRecording();
-                    }
-
-                    if (!sceneHandled) {
-                        obs.ChangeScene(obs.DefaultScene);
-                        Console.WriteLine($"  Switching to OBS default scene named \"{obs.DefaultScene}\"");
-                    }
                 }
             }
         }

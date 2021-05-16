@@ -9,7 +9,6 @@
         private bool disposedValue;
         private ObsWebSocket webSocket;
         private List<string> validScenes;
-        private string defaultScene;
 
         public OBS() {
         }
@@ -17,18 +16,6 @@
         ~OBS() {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             this.Dispose(disposing: false);
-        }
-
-        public string DefaultScene {
-            get => this.defaultScene;
-
-            set {
-                if (this.validScenes.Contains(value)) {
-                    this.defaultScene = value;
-                } else {
-                    Console.WriteLine($"Scene named {value} does not exist and cannot be set as default");
-                }
-            }
         }
 
         public Task Connect() {
@@ -40,16 +27,10 @@
         public bool ChangeScene(string scene) {
             if (!this.validScenes.Contains(scene)) {
                 Console.WriteLine($"Scene named \"{scene}\" does not exist");
-                if (string.IsNullOrEmpty(this.defaultScene)) {
-                    Console.WriteLine("No default scene has been set!");
-                    return false;
-                }
-
-                scene = this.defaultScene;
+                return false;
             }
 
             this.webSocket.Api.SetCurrentScene(scene);
-
             return true;
         }
 
@@ -59,26 +40,6 @@
             foreach (var scene in this.validScenes) {
                 Console.WriteLine(scene);
             }
-        }
-
-        public bool StartRecording() {
-            try {
-                this.webSocket.Api.StartRecording();
-            } catch {
-                // Recording already started
-            }
-
-            return true;
-        }
-
-        public bool StopRecording() {
-            try {
-                this.webSocket.Api.StopRecording();
-            } catch {
-                // Recording already stopped
-            }
-
-            return true;
         }
 
         public void Dispose() {

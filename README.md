@@ -13,13 +13,3 @@ Example:
 ```<language>
 OBS:Scenename
 ```
-
-* Set a default scene (used when a scene is not defined) with
-```<language>
-OBSDEF:{Scene name as it appears in OBS}
-```
-
-Example:
-```<language>
-OBSDEF:DefaultScene
-```
