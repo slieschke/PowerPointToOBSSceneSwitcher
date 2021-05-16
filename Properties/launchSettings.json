@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SceneSwitcher": {
+      "commandName": "Project",
+      "commandLineArgs": "test"
+    }
+  }
+}
