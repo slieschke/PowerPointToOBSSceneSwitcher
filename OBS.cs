@@ -24,13 +24,18 @@
             return Task.CompletedTask;
         }
 
-        public bool ChangeScene(string scene) {
+        public bool ChangeScene(string scene, int delay = 0) {
             if (!this.validScenes.Contains(scene)) {
-                Console.WriteLine($"Scene named \"{scene}\" does not exist");
+                Console.WriteLine($"OBS scene named \"{scene}\" does not exist");
                 return false;
             }
 
-            this.webSocket.Api.SetCurrentScene(scene);
+            if (delay == 0) {
+                this.webSocket.Api.SetCurrentScene(scene);
+            } else {
+                Task.Delay(delay).ContinueWith(t => this.webSocket.Api.SetCurrentScene(scene));
+            }
+
             return true;
         }
 

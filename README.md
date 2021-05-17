@@ -12,6 +12,12 @@ Set a scene for a slide with:
 OBS:<Scene name as it appears in OBS>
 ```
 
+Set a scene for a slide after a delay with:
+```
+OBS:DELAY:<Scene name as it appears in OBS>
+```
+If a PTZ camera scene (per below) exists with the same name as the OBS scene, that PTZ camera scene will be switched immediately on slide transition. This primes the camera to its new position to avoid the camera movement appearing on the stream.
+
 ### PTZ
 
 Change the PTZ camera scene with:

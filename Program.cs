@@ -9,6 +9,7 @@
     internal class Program {
         private static readonly Application PowerPoint = new Microsoft.Office.Interop.PowerPoint.Application();
         private static readonly HttpClient HttpClient;
+        private static readonly int Delay;
         private static readonly JsonElement Config;
 
         private static OBS obs;
@@ -17,6 +18,7 @@
         static Program() {
             Console.Write("Reading configuration...");
             Config = JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
+            Delay = Config.TryGetProperty("delay", out JsonElement delay) ? delay.GetInt32() : 2500;
             Console.WriteLine(" read");
         }
 
@@ -57,10 +59,19 @@
                     if (line.StartsWith("OBS:")) {
                         line = line.Substring(4).Trim();
 
+                        int delay = 0;
+                        if (line.StartsWith("DELAY:")) {
+                            line = line.Substring(6).Trim();
+                            delay = Delay;
+                            if (Config.TryGetProperty(line, out _)) {
+                                await PTZ(line);
+                            }
+                        }
+
                         if (!sceneHandled) {
                             Console.WriteLine($"  Switching to OBS scene named \"{line}\"");
                             try {
-                                sceneHandled = obs.ChangeScene(line);
+                                sceneHandled = obs.ChangeScene(line, delay);
                             } catch (Exception ex) {
                                 Console.WriteLine($"  ERROR: {ex.Message}");
                             }
@@ -80,6 +91,11 @@
 
         private static async Task PTZ(string line) {
             Console.WriteLine($"  Switching to PTZ camera scene named \"{line}\"");
+
+            if (Config.TryGetProperty(line, out JsonElement url)) {
+                Console.WriteLine($"PTZ scene named \"{line}\" does not exist");
+                return;
+            }
 
             string httpCgiUrl = Config.GetProperty(line).GetString();
 
