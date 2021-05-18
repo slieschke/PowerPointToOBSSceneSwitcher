@@ -3,11 +3,11 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using global::OBS.WebSocket.NET;
+    using OBSWebsocketDotNet;
 
     public class OBS : IDisposable {
         private bool disposedValue;
-        private ObsWebSocket webSocket;
+        private OBSWebsocket websocket;
         private List<string> validScenes;
 
         public OBS() {
@@ -19,8 +19,8 @@
         }
 
         public Task Connect() {
-            this.webSocket = new ObsWebSocket();
-            this.webSocket.Connect($"ws://127.0.0.1:4444", string.Empty);
+            this.websocket = new OBSWebsocket();
+            this.websocket.Connect($"ws://127.0.0.1:4444", string.Empty);
             return Task.CompletedTask;
         }
 
@@ -31,16 +31,16 @@
             }
 
             if (delay == 0) {
-                this.webSocket.Api.SetCurrentScene(scene);
+                this.websocket.SetCurrentScene(scene);
             } else {
-                Task.Delay(delay).ContinueWith(t => this.webSocket.Api.SetCurrentScene(scene));
+                Task.Delay(delay).ContinueWith(t => this.websocket.SetCurrentScene(scene));
             }
 
             return true;
         }
 
         public void GetScenes() {
-            this.validScenes = this.webSocket.Api.GetSceneList().Scenes.Select(s => s.Name).ToList();
+            this.validScenes = this.websocket.GetSceneList().Scenes.Select(s => s.Name).ToList();
             Console.WriteLine("Valid scenes:");
             foreach (var scene in this.validScenes) {
                 Console.WriteLine(scene);
@@ -59,8 +59,8 @@
                     // TODO: dispose managed state (managed objects)
                 }
 
-                this.webSocket.Disconnect();
-                this.webSocket = null;
+                this.websocket.Disconnect();
+                this.websocket = null;
                 this.disposedValue = true;
             }
         }
