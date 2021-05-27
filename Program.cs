@@ -1,36 +1,40 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.Office.Interop.PowerPoint;
-
-//Thanks to CSharpFritz and EngstromJimmy for their gists, snippets, and thoughts.
+﻿// Thanks to CSharpFritz and EngstromJimmy for their gists, snippets, and thoughts.
 
 namespace SceneSwitcher {
-    class Program {
-        private static readonly Application ppt = new Microsoft.Office.Interop.PowerPoint.Application();
-        private static ObsLocal OBS;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
+    using Microsoft.Office.Interop.PowerPoint;
 
-        static async Task Main() {
+    internal class Program {
+        private static readonly Application PowerPoint = new Microsoft.Office.Interop.PowerPoint.Application();
+        private static OBS obs;
+
+        private static async Task Main() {
             Console.Write("Connecting to PowerPoint...");
-            ppt.SlideShowNextSlide += App_SlideShowNextSlide;
+            PowerPoint.SlideShowNextSlide += App_SlideShowNextSlide;
             Console.WriteLine("connected");
 
             Console.Write("Connecting to OBS...");
-            OBS = new ObsLocal();
-            await OBS.Connect();
+            obs = new OBS();
+            await obs.Connect();
             Console.WriteLine("connected");
 
-            OBS.GetScenes();
+            obs.GetScenes();
 
             Console.ReadLine();
         }
 
-        static void App_SlideShowNextSlide(SlideShowWindow Wn) {
-            if (Wn != null) {
-                Console.WriteLine($"Moved to Slide Number {Wn.View.Slide.SlideNumber}");
-                //Text starts at Index 2 ¯\_(ツ)_/¯
-                var note = String.Empty;
-                try { note = Wn.View.Slide.NotesPage.Shapes[2].TextFrame.TextRange.Text; } catch { /*no notes*/ }
+        private static void App_SlideShowNextSlide(SlideShowWindow window) {
+            if (window != null) {
+                Console.WriteLine($"Moved to Slide Number {window.View.Slide.SlideNumber}");
+
+                // Text starts at Index 2 ¯\_(ツ)_/¯
+                var note = string.Empty;
+                try {
+                    note = window.View.Slide.NotesPage.Shapes[2].TextFrame.TextRange.Text;
+                } catch { /*no notes*/
+                }
 
                 bool sceneHandled = false;
 
@@ -43,7 +47,7 @@ namespace SceneSwitcher {
                         if (!sceneHandled) {
                             Console.WriteLine($"  Switching to OBS Scene named \"{line}\"");
                             try {
-                                sceneHandled = OBS.ChangeScene(line);
+                                sceneHandled = obs.ChangeScene(line);
                             } catch (Exception ex) {
                                 Console.WriteLine($"  ERROR: {ex.Message}");
                             }
@@ -53,21 +57,21 @@ namespace SceneSwitcher {
                     }
 
                     if (line.StartsWith("OBSDEF:")) {
-                        OBS.DefaultScene = line.Substring(7).Trim();
-                        Console.WriteLine($"  Setting the default OBS Scene to \"{OBS.DefaultScene}\"");
+                        obs.DefaultScene = line.Substring(7).Trim();
+                        Console.WriteLine($"  Setting the default OBS Scene to \"{obs.DefaultScene}\"");
                     }
 
                     if (line.StartsWith("**START")) {
-                        OBS.StartRecording();
+                        obs.StartRecording();
                     }
 
                     if (line.StartsWith("**STOP")) {
-                        OBS.StopRecording();
+                        obs.StopRecording();
                     }
 
                     if (!sceneHandled) {
-                        OBS.ChangeScene(OBS.DefaultScene);
-                        Console.WriteLine($"  Switching to OBS Default Scene named \"{OBS.DefaultScene}\"");
+                        obs.ChangeScene(obs.DefaultScene);
+                        Console.WriteLine($"  Switching to OBS Default Scene named \"{obs.DefaultScene}\"");
                     }
                 }
             }

@@ -1,92 +1,103 @@
-﻿using OBS.WebSocket.NET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿namespace SceneSwitcher {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using global::OBS.WebSocket.NET;
 
-namespace SceneSwitcher {
-    public class ObsLocal : IDisposable {
-        private bool _DisposedValue;
-        private ObsWebSocket _OBS;
+    public class OBS : IDisposable {
+        private bool disposedValue;
+        private ObsWebSocket webSocket;
         private List<string> validScenes;
         private string defaultScene;
 
-        public ObsLocal() { }
+        public OBS() {
+        }
 
-        public Task Connect() {
-            _OBS = new ObsWebSocket();
-            _OBS.Connect($"ws://127.0.0.1:4444", "");
-            return Task.CompletedTask;
+        ~OBS() {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            this.Dispose(disposing: false);
         }
 
         public string DefaultScene {
-            get { return defaultScene; }
+            get => this.defaultScene;
+
             set {
-                if (validScenes.Contains(value)) {
-                    defaultScene = value;
+                if (this.validScenes.Contains(value)) {
+                    this.defaultScene = value;
                 } else {
                     Console.WriteLine($"Scene named {value} does not exist and cannot be set as default");
                 }
             }
         }
 
+        public Task Connect() {
+            this.webSocket = new ObsWebSocket();
+            this.webSocket.Connect($"ws://127.0.0.1:4444", string.Empty);
+            return Task.CompletedTask;
+        }
+
         public bool ChangeScene(string scene) {
-            if (!validScenes.Contains(scene)) {
+            if (!this.validScenes.Contains(scene)) {
                 Console.WriteLine($"Scene named {scene} does not exist");
-                if (String.IsNullOrEmpty(defaultScene)) {
+                if (string.IsNullOrEmpty(this.defaultScene)) {
                     Console.WriteLine("No default scene has been set!");
                     return false;
                 }
 
-                scene = defaultScene;
+                scene = this.defaultScene;
             }
 
-            _OBS.Api.SetCurrentScene(scene);
+            this.webSocket.Api.SetCurrentScene(scene);
 
             return true;
         }
 
         public void GetScenes() {
-            var allScene = _OBS.Api.GetSceneList();
+            var allScene = this.webSocket.Api.GetSceneList();
             var list = allScene.Scenes.Select(s => s.Name).ToList();
             Console.WriteLine("Valid Scenes:");
             foreach (var l in list) {
                 Console.WriteLine(l);
             }
-            validScenes = list;
+
+            this.validScenes = list;
         }
 
         public bool StartRecording() {
-            try { _OBS.Api.StartRecording(); } catch {  /* Recording already started */ }
+            try {
+                this.webSocket.Api.StartRecording();
+            } catch { /* Recording already started */
+            }
+
             return true;
         }
 
         public bool StopRecording() {
-            try { _OBS.Api.StopRecording(); } catch {  /* Recording already stopped */ }
-            return true;
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (!_DisposedValue) {
-                if (disposing) {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                _OBS.Disconnect();
-                _OBS = null;
-                _DisposedValue = true;
+            try {
+                this.webSocket.Api.StopRecording();
+            } catch { /* Recording already stopped */
             }
-        }
 
-        ~ObsLocal() {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
+            return true;
         }
 
         public void Dispose() {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (!this.disposedValue) {
+                if (disposing) {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                this.webSocket.Disconnect();
+                this.webSocket = null;
+                this.disposedValue = true;
+            }
         }
     }
 }
