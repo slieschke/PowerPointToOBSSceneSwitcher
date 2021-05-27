@@ -39,7 +39,7 @@
 
         public bool ChangeScene(string scene) {
             if (!this.validScenes.Contains(scene)) {
-                Console.WriteLine($"Scene named {scene} does not exist");
+                Console.WriteLine($"Scene named \"{scene}\" does not exist");
                 if (string.IsNullOrEmpty(this.defaultScene)) {
                     Console.WriteLine("No default scene has been set!");
                     return false;
@@ -54,20 +54,18 @@
         }
 
         public void GetScenes() {
-            var allScene = this.webSocket.Api.GetSceneList();
-            var list = allScene.Scenes.Select(s => s.Name).ToList();
-            Console.WriteLine("Valid Scenes:");
-            foreach (var l in list) {
-                Console.WriteLine(l);
+            this.validScenes = this.webSocket.Api.GetSceneList().Scenes.Select(s => s.Name).ToList();
+            Console.WriteLine("Valid scenes:");
+            foreach (var scene in this.validScenes) {
+                Console.WriteLine(scene);
             }
-
-            this.validScenes = list;
         }
 
         public bool StartRecording() {
             try {
                 this.webSocket.Api.StartRecording();
-            } catch { /* Recording already started */
+            } catch {
+                // Recording already started
             }
 
             return true;
@@ -76,7 +74,8 @@
         public bool StopRecording() {
             try {
                 this.webSocket.Api.StopRecording();
-            } catch { /* Recording already stopped */
+            } catch {
+                // Recording already stopped
             }
 
             return true;
