@@ -1,113 +1,135 @@
 ﻿namespace SceneSwitcher {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Net.Http;
     using System.Text.Json;
     using System.Threading.Tasks;
     using Microsoft.Office.Interop.PowerPoint;
 
     internal class Program {
-        private static readonly Application PowerPoint = new Microsoft.Office.Interop.PowerPoint.Application();
-        private static readonly HttpClient HttpClient;
-        private static readonly int Delay;
-        private static readonly JsonElement Config;
+        private static readonly Application PowerPoint = new Application();
+        private static readonly HttpClient HttpClient = new HttpClient();
 
+        private static Config config;
         private static OBS obs;
-        private static bool testMode;
-
-        static Program() {
-            Console.Write("Reading configuration...");
-            Config = JsonDocument.Parse(File.ReadAllText("config.json")).RootElement;
-            Delay = Config.TryGetProperty("delay", out JsonElement delay) ? delay.GetInt32() : 2500;
-            Console.WriteLine(" read");
-        }
+        private static bool skipPtzRequests;
+        private static TallyLight activeTallyLight;
 
         private static async Task Main(string[] args) {
-            testMode = args.Length != 0 && args[0] == "test";
+            var argList = new List<string>(args);
 
-            Console.Write("Connecting to PowerPoint...");
-            PowerPoint.SlideShowNextSlide += App_SlideShowNextSlide;
-            Console.WriteLine(" connected");
+            // For testing at home
+            skipPtzRequests = argList.Contains("skipPtzRequests") || argList.Contains("skipAllRequests");
+            TallyLight.SetSkipRequests(argList.Contains("skipTallyLightRequests") || argList.Contains("skipAllRequests"));
 
-            Console.Write("Connecting to OBS...");
+            Console.WriteLine("Reading configuration...");
+            config = JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"), new JsonSerializerOptions {
+                PropertyNameCaseInsensitive = true,
+            });
+
+            Console.WriteLine("Connecting to PowerPoint...");
+            PowerPoint.SlideShowNextSlide += NextSlide;
+
+            Console.WriteLine("Connecting to OBS...");
             obs = new OBS();
             await obs.Connect();
-            Console.WriteLine(" connected");
+            obs.SceneChanged += NextScene;
+            var currentScene = obs.GetCurrentScene();
 
-            obs.GetScenes();
+            Console.WriteLine($"Current OBS scene is \"{currentScene}\"");
+            config.TallyLights.ForEach(tallyLight => tallyLight.TurnOff());
 
             Console.ReadLine();
         }
 
-        private static async void App_SlideShowNextSlide(SlideShowWindow window) {
-            if (window != null) {
-                Console.WriteLine($"Moved to slide number {window.View.Slide.SlideNumber}");
+        private static async void NextSlide(SlideShowWindow window) {
+            if (window == null) {
+                return;
+            }
 
-                // Text starts at index 2 ¯\_(ツ)_/¯
-                var note = string.Empty;
-                try {
-                    note = window.View.Slide.NotesPage.Shapes[2].TextFrame.TextRange.Text;
-                } catch {
-                    // Slide has no notes
-                }
+            Console.WriteLine($"Moved to slide {window.View.Slide.SlideNumber}");
 
-                bool sceneHandled = false;
+            // Text starts at index 2 ¯\_(ツ)_/¯
+            string note;
+            try {
+                note = window.View.Slide.NotesPage.Shapes[2].TextFrame.TextRange.Text;
+            } catch {
+                // Slide has no notes
+                return;
+            }
 
-                var noteReader = new StringReader(note);
-                string line;
-                while ((line = noteReader.ReadLine()) != null) {
-                    if (line.StartsWith("OBS:")) {
-                        line = line.Substring(4).Trim();
+            string line;
+            IDictionary<string, string> commands = new Dictionary<string, string>();
+            var noteReader = new StringReader(note);
+            while ((line = noteReader.ReadLine()) != null) {
+                var parts = line.Split(':', 2);
+                commands.Add(parts[0], parts[1]);
+            }
 
-                        int delay = 0;
-                        if (line.StartsWith("DELAY:")) {
-                            line = line.Substring(6).Trim();
-                            delay = Delay;
-                            if (Config.TryGetProperty(line, out _)) {
-                                await PTZ(line);
-                            }
+            foreach (var command in commands) {
+                var argument = command.Value.Trim();
+                switch (command.Key) {
+                    case "OBS":
+                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\"");
+                        obs.ChangeScene(argument, 0);
+                        break;
+                    case "OBS-DELAY":
+                        if (config.PtzPresets.ContainsKey(argument)) {
+                            await PTZ(argument);
                         }
 
-                        if (!sceneHandled) {
-                            Console.WriteLine($"  Switching to OBS scene named \"{line}\"");
-                            try {
-                                sceneHandled = obs.ChangeScene(line, delay);
-                            } catch (Exception ex) {
-                                Console.WriteLine($"  ERROR: {ex.Message}");
-                            }
-                        } else {
-                            Console.WriteLine($"  WARNING: Multiple scene definitions found. I used the first and have ignored \"{line}\"");
-                        }
-                    }
-
-                    if (line.StartsWith("PTZ:")) {
-                        line = line.Substring(4).Trim();
-
-                        await PTZ(line);
-                    }
+                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after delay");
+                        obs.ChangeScene(argument, config.ObsDelayPeriod);
+                        break;
+                    case "PTZ":
+                        await PTZ(argument);
+                        break;
                 }
             }
         }
 
+        private static void NextScene(object sender, string scene) {
+            Console.WriteLine($"  OBS scene changed to \"{scene}\"");
+            SetTallyLightScene(scene);
+        }
+
+        private static void SetTallyLightScene(string scene) {
+            var sceneSources = obs.GetSceneSources(scene);
+            var liveTallyLight = config.TallyLights.FirstOrDefault(tallyLight => sceneSources.Contains(tallyLight.ObsSource));
+            if (activeTallyLight == liveTallyLight) {
+                return;
+            }
+
+            if (activeTallyLight != null) {
+                activeTallyLight.TurnOff();
+            }
+
+            if (liveTallyLight != null) {
+                liveTallyLight.TurnOn();
+            }
+
+            activeTallyLight = liveTallyLight;
+        }
+
         private static async Task PTZ(string line) {
-            Console.WriteLine($"  Switching to PTZ camera scene named \"{line}\"");
-
-            if (Config.TryGetProperty(line, out JsonElement url)) {
-                Console.WriteLine($"PTZ scene named \"{line}\" does not exist");
+            Console.Write($"  Switching to PTZ camera preset named \"{line}\"");
+            if (!config.PtzPresets.ContainsKey(line)) {
+                Console.WriteLine();
+                Console.WriteLine($"  PTZ preset named \"{line}\" does not exist");
                 return;
             }
 
-            string httpCgiUrl = Config.GetProperty(line).GetString();
+            var httpCgiUrl = config.PtzPresets[line];
+            Console.WriteLine($" - {httpCgiUrl}");
 
-            if (testMode) {
-                // For testing at home
+            if (skipPtzRequests) {
                 return;
             }
-
-            Console.WriteLine(httpCgiUrl);
 
             try {
-                string responseBody = await HttpClient.GetStringAsync(httpCgiUrl);
+                var responseBody = await HttpClient.GetStringAsync(httpCgiUrl);
                 Console.WriteLine(responseBody);
             } catch (HttpRequestException ex) {
                 Console.WriteLine($"  ERROR: {ex.Message}");
