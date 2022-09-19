@@ -1,5 +1,6 @@
 ﻿namespace SceneSwitcher {
     using System;
+
     using Flurl;
     using Flurl.Http;
 
