@@ -83,12 +83,21 @@
                         obs.ChangeScene(argument, 0);
                         break;
                     case "OBS-DELAY":
+                    case "OBS-SHORT-DELAY":
                         if (config.PtzPresets.ContainsKey(argument)) {
                             PTZ(argument);
                         }
 
-                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after delay");
-                        obs.ChangeScene(argument, config.ObsDelayPeriod);
+                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after short delay");
+                        obs.ChangeScene(argument, config.ShortDelay);
+                        break;
+                    case "OBS-LONG-DELAY":
+                        if (config.PtzPresets.ContainsKey(argument)) {
+                            PTZ(argument);
+                        }
+
+                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after long delay");
+                        obs.ChangeScene(argument, config.LongDelay);
                         break;
                     case "PTZ":
                         PTZ(argument);

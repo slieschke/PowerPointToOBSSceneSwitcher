@@ -2,7 +2,9 @@
     using System.Collections.Generic;
 
     public class Config {
-        public int ObsDelayPeriod { get; set; } = 2500;
+        public int LongDelay { get; set; } = 5000;
+
+        public int ShortDelay { get; set; } = 2000;
 
         public Dictionary<string, string> PtzPresets { get; set; }
 

@@ -8,19 +8,18 @@ This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has be
 
 ### OBS
 
-Set a scene for a slide with:
+Set the OBS scene to display for a slide with:
 
 ```text
 OBS:<Scene name as it appears in OBS>
 ```
 
-Set a scene for a slide after a delay with:
+Set the OBS scene to display for a slide after a delay period. If a PTZ camera scene (per below) exists with the same name as the OBS scene, that PTZ camera scene will be switched immediately on slide transition. This primes the camera to its new position to avoid the camera movement appearing on the stream.
 
 ```text
-OBS:DELAY:<Scene name as it appears in OBS>
+OBS-LONG-DELAY:<Scene name as it appears in OBS>
+OBS-SHORT-DELAY:<Scene name as it appears in OBS>
 ```
-
-If a PTZ camera scene (per below) exists with the same name as the OBS scene, that PTZ camera scene will be switched immediately on slide transition. This primes the camera to its new position to avoid the camera movement appearing on the stream.
 
 ### PTZ
 
@@ -38,11 +37,12 @@ Running `SceneSwitcher.exe test` will suppress the PTZ HTTP-CGI URLs from being 
 
 SceneSwitcher is configured through a `config.json` file contained in the same directory as the executable. The following properties can be configured:
 
-| Property         | Description                                                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `obsDelayPeriod` | The period in milliseconds to delay when switching OBS scenes. Optional; defaults to `2500`.                      |
-| `ptzPresets`     | A mapping of PTZ scene names to PTZ HTTP-CGI command URLs that, when requested, will change the PTZ camera scene. |
-| `tallyLights`    | A list of tally light configurations that can drive tally lights to indicate when a camera is live.               |
+| Property      | Description                                                                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `longDelay`   | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-LONG-DELAY command. Optional; defaults to `5000`.  |
+| `shortDelay`  | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-SHORT-DELAY command. Optional; defaults to `2000`. |
+| `ptzPresets`  | A mapping of PTZ scene names to PTZ HTTP-CGI command URLs that, when requested, will change the PTZ camera scene.                       |
+| `tallyLights` | A list of tally light configurations that can drive tally lights to indicate when a camera is live.                                     |
 
 #### Tally light configuration
 
@@ -59,7 +59,8 @@ A tally light will be turned on using the above configuration by sending a reque
 
 ```json
 {
-  "obsDelayPeriod": 1000,
+  "longDelay": 7500,
+  "shortDelay": 1000,
   "ptzPresets": {
     "Altar Full": "http://192.168.1.8/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&1",
     "Altar Mid": "http://192.168.1.8/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&3",
