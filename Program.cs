@@ -68,10 +68,13 @@
                     i--;
                 }
 
-                // If there is a OBS-DELAY command, switch to that scene immediately, ignoring any OBS command
-                if (commands.ContainsKey("OBS-DELAY")) {
-                    commands["OBS"] = commands["OBS-DELAY"];
+                // If there is any OBS delay command, switch to that scene immediately, ignoring any OBS command
+                string[] delayCommands = { "OBS-DELAY", "OBS-LONG-DELAY", "OBS-SHORT-DELAY" };
+                if (commands.Keys.Intersect(delayCommands).Count() > 0) {
+                    commands["OBS"] = commands["OBS-DELAY"] ?? commands["OBS-LONG-DELAY"] ?? commands["OBS-SHORT-DELAY"];
                     commands.Remove("OBS-DELAY");
+                    commands.Remove("OBS-LONG-DELAY");
+                    commands.Remove("OBS-SHORT-DELAY");
                 }
             }
 
