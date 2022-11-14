@@ -4,16 +4,14 @@
     using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-
+    using Flurl.Http;
     using Microsoft.Office.Interop.PowerPoint;
 
     internal class Program {
         private static readonly Application PowerPoint = new Application();
-        private static readonly HttpClient HttpClient = new HttpClient();
 
         private static bool skipPtzRequests;
         private static int currentSlideNumber;
@@ -193,9 +191,9 @@
             }
 
             try {
-                var responseBody = await HttpClient.GetStringAsync(httpCgiUrl);
+                var responseBody = await httpCgiUrl.GetAsync();
                 Console.WriteLine(responseBody);
-            } catch (HttpRequestException ex) {
+            } catch (FlurlHttpException ex) {
                 Console.WriteLine($"  ERROR: {ex.Message}");
             }
         }
