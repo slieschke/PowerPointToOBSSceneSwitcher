@@ -30,7 +30,7 @@
             this.Toggle("off", new { state = "off" });
         }
 
-        private void Toggle(string state, object queryParams) {
+        private async void Toggle(string state, object queryParams) {
             var url = this.BaseUrl.SetQueryParams(queryParams);
             Console.WriteLine($"  Turning {state} tally light for camera \"{this.ObsSource}\" - {url}");
 
@@ -38,7 +38,11 @@
                 return;
             }
 
-            url.GetAsync();
+            try {
+                await url.GetAsync();
+            } catch (FlurlHttpException ex) {
+                Console.WriteLine($"  ERROR: {ex.Message}");
+            }
         }
     }
 }
