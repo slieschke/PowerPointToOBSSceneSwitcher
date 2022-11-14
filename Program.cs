@@ -1,6 +1,7 @@
 ﻿namespace SceneSwitcher {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
     using System.Net.Http;
@@ -12,9 +13,11 @@
         private static readonly Application PowerPoint = new Application();
         private static readonly HttpClient HttpClient = new HttpClient();
 
+        private static bool skipPtzRequests;
+        private static int currentSlideNumber;
+
         private static Config config;
         private static OBS obs;
-        private static bool skipPtzRequests;
         private static TallyLight activeTallyLight;
 
         private static async Task Main(string[] args) {
@@ -49,23 +52,26 @@
                 return;
             }
 
-            Console.WriteLine($"Moved to slide {window.View.Slide.SlideNumber}");
+            int previousSlideNumber = currentSlideNumber;
+            currentSlideNumber = window.View.Slide.SlideNumber;
+            Console.WriteLine($"Moved to slide {currentSlideNumber}");
 
-            // Text starts at index 2 ¯\_(ツ)_/¯
-            string note;
-            try {
-                note = window.View.Slide.NotesPage.Shapes[2].TextFrame.TextRange.Text;
-            } catch {
-                // Slide has no notes
-                return;
-            }
+            IDictionary<string, string> commands = GetSlideCommands(window.View.Slide);
+            if (currentSlideNumber < previousSlideNumber) {
+                // Went back a slide
+                int i = currentSlideNumber;
 
-            string line;
-            IDictionary<string, string> commands = new Dictionary<string, string>();
-            var noteReader = new StringReader(note);
-            while ((line = noteReader.ReadLine()) != null) {
-                var parts = line.Split(':', 2);
-                commands.Add(parts[0], parts[1]);
+                // Find the previous slide that had commands
+                while (!commands.Any()) {
+                    commands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[i]);
+                    i--;
+                }
+
+                // If there is a OBS-DELAY command, switch to that scene immediately, ignoring any OBS command
+                if (commands.ContainsKey("OBS-DELAY")) {
+                    commands["OBS"] = commands["OBS-DELAY"];
+                    commands.Remove("OBS-DELAY");
+                }
             }
 
             foreach (var command in commands) {
@@ -88,6 +94,27 @@
                         break;
                 }
             }
+        }
+
+        private static IDictionary<string, string> GetSlideCommands(Slide slide) {
+            // Text starts at index 2 ¯\_(ツ)_/¯
+            string note;
+            try {
+                note = slide.NotesPage.Shapes[2].TextFrame.TextRange.Text;
+            } catch {
+                // Slide has no notes
+                return ImmutableDictionary<string, string>.Empty;
+            }
+
+            string line;
+            IDictionary<string, string> commands = new Dictionary<string, string>();
+            var noteReader = new StringReader(note);
+            while ((line = noteReader.ReadLine()) != null) {
+                var parts = line.Split(':', 2);
+                commands[parts[0]] = parts[1];
+            }
+
+            return commands;
         }
 
         private static void NextScene(object sender, string scene) {
