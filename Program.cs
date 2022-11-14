@@ -44,7 +44,7 @@
             Console.ReadLine();
         }
 
-        private static async void NextSlide(SlideShowWindow window) {
+        private static void NextSlide(SlideShowWindow window) {
             if (window == null) {
                 return;
             }
@@ -77,14 +77,14 @@
                         break;
                     case "OBS-DELAY":
                         if (config.PtzPresets.ContainsKey(argument)) {
-                            await PTZ(argument);
+                            PTZ(argument);
                         }
 
                         Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after delay");
                         obs.ChangeScene(argument, config.ObsDelayPeriod);
                         break;
                     case "PTZ":
-                        await PTZ(argument);
+                        PTZ(argument);
                         break;
                 }
             }
@@ -113,7 +113,7 @@
             activeTallyLight = liveTallyLight;
         }
 
-        private static async Task PTZ(string line) {
+        private static async void PTZ(string line) {
             Console.Write($"  Switching to PTZ camera preset named \"{line}\"");
             if (!config.PtzPresets.ContainsKey(line)) {
                 Console.WriteLine();
