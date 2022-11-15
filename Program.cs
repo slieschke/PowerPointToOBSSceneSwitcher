@@ -67,13 +67,12 @@
                     i--;
                 }
 
-                // If there is any OBS delay command, switch to that scene immediately, ignoring any OBS command
-                string[] delayCommands = { "OBS-DELAY", "OBS-LONG-DELAY", "OBS-SHORT-DELAY" };
+                // If there is any VIDEO-*-DELAY command, switch to that scene immediately, ignoring any VIDEO command
+                string[] delayCommands = { "VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY" };
                 if (commands.Keys.Intersect(delayCommands).Count() > 0) {
-                    commands["OBS"] = commands["OBS-DELAY"] ?? commands["OBS-LONG-DELAY"] ?? commands["OBS-SHORT-DELAY"];
-                    commands.Remove("OBS-DELAY");
-                    commands.Remove("OBS-LONG-DELAY");
-                    commands.Remove("OBS-SHORT-DELAY");
+                    commands["VIDEO"] = commands["VIDEO-LONG-DELAY"] ?? commands["VIDEO-SHORT-DELAY"];
+                    commands.Remove("VIDEO-LONG-DELAY");
+                    commands.Remove("VIDEO-SHORT-DELAY");
                 }
             }
 
@@ -85,12 +84,11 @@
                         Console.WriteLine($"  Setting audio sources to \"{string.Join(", ", audioSources)}\"");
                         obs.SetAudioSources(audioSources);
                         break;
-                    case "OBS":
+                    case "VIDEO":
                         Console.WriteLine($"  Switching to OBS scene named \"{argument}\"");
                         obs.ChangeScene(argument, 0);
                         break;
-                    case "OBS-DELAY":
-                    case "OBS-SHORT-DELAY":
+                    case "VIDEO-SHORT-DELAY":
                         if (config.PtzPresets.ContainsKey(argument)) {
                             PTZ(argument);
                         }
@@ -98,7 +96,7 @@
                         Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after short delay");
                         obs.ChangeScene(argument, config.ShortDelay);
                         break;
-                    case "OBS-LONG-DELAY":
+                    case "VIDEO-LONG-DELAY":
                         if (config.PtzPresets.ContainsKey(argument)) {
                             PTZ(argument);
                         }
