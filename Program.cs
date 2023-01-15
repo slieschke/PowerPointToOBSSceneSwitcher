@@ -141,7 +141,7 @@
             while ((line = noteReader.ReadLine()) != null) {
                 var parts = NormalizeWhitespace(line).Split(':', 2);
                 if (parts.Length == 2) {
-                    commands[parts[0]] = parts[1];
+                    commands[parts[0].ToUpper().Trim()] = parts[1];
                 } else {
                     Console.WriteLine($"  Skipping invalid command \"{line}\"");
                 }

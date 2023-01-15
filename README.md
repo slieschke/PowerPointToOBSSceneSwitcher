@@ -6,6 +6,8 @@ This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has be
 
 ## Commands
 
+All command names are case insensitive.
+
 ### AUDIO
 
 Set the configured variable OBS audio sources to unmute. All other configured variable audio sources will be muted. Setting this to no value will mute all the variable audio sources.
