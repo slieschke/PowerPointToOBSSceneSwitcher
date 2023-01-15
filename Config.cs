@@ -9,5 +9,7 @@
         public Dictionary<string, string> PtzPresets { get; set; }
 
         public List<TallyLight> TallyLights { get; set; }
+
+        public List<string> VariableAudioSources { get; set; }
     }
 }

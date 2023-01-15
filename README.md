@@ -6,6 +6,14 @@ This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has be
 
 ## Commands
 
+### AUDIO
+
+Set the configured variable OBS audio sources to unmute. All other configured variable audio sources will be muted. Setting this to no value will mute all the variable audio sources.
+
+```text
+AUDIO:<comma separated list of OBS audio source names>
+```
+
 ### OBS
 
 Set the OBS scene to display for a slide with:
@@ -37,12 +45,13 @@ Running `SceneSwitcher.exe test` will suppress the PTZ HTTP-CGI URLs from being 
 
 SceneSwitcher is configured through a `config.json` file contained in the same directory as the executable. The following properties can be configured:
 
-| Property      | Description                                                                                                                             |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `longDelay`   | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-LONG-DELAY command. Optional; defaults to `5000`.  |
-| `shortDelay`  | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-SHORT-DELAY command. Optional; defaults to `2000`. |
-| `ptzPresets`  | A mapping of PTZ scene names to PTZ HTTP-CGI command URLs that, when requested, will change the PTZ camera scene.                       |
-| `tallyLights` | A list of tally light configurations that can drive tally lights to indicate when a camera is live.                                     |
+| Property               | Description                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `longDelay`            | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-LONG-DELAY command. Optional; defaults to `5000`.    |
+| `shortDelay`           | The delay period in milliseconds to wait when switching to an OBS scene with the OBS-SHORT-DELAY command. Optional; defaults to `2000`.   |
+| `ptzPresets`           | A mapping of PTZ scene names to PTZ HTTP-CGI command URLs that, when requested, will change the PTZ camera scene.                         |
+| `tallyLights`          | A list of tally light configurations that can drive tally lights to indicate when a camera is live.                                       |
+| `variableAudioSources` | A list of OBS audio sources that can be controlled using the AUDIO command.                                                               |
 
 #### Tally light configuration
 

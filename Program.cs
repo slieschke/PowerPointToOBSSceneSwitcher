@@ -37,7 +37,7 @@
             PowerPoint.SlideShowNextSlide += NextSlide;
 
             Console.WriteLine("Connecting to OBS...");
-            obs = new OBS();
+            obs = new OBS(config.VariableAudioSources);
             await obs.Connect();
             obs.SceneChanged += NextScene;
             var currentScene = obs.GetCurrentScene();
@@ -81,6 +81,11 @@
             foreach (var command in commands) {
                 var argument = command.Value.Trim();
                 switch (command.Key) {
+                    case "AUDIO":
+                        List<string> audioSources = ParseListArgument(argument);
+                        Console.WriteLine($"  Setting audio sources to \"{string.Join(", ", audioSources)}\"");
+                        obs.SetAudioSources(audioSources);
+                        break;
                     case "OBS":
                         Console.WriteLine($"  Switching to OBS scene named \"{argument}\"");
                         obs.ChangeScene(argument, 0);

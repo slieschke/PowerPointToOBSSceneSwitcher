@@ -8,11 +8,13 @@
 
     public class OBS : IDisposable {
         private OBSWebsocket websocket;
-        private List<string> validScenes;
+        private List<string> scenes;
+        private List<string> variableAudioSources;
         private Dictionary<string, HashSet<string>> sceneSources;
         private bool disposedValue;
 
-        public OBS() {
+        public OBS(List<string> variableAudioSources) {
+            this.variableAudioSources = variableAudioSources;
         }
 
         ~OBS() {
@@ -25,7 +27,13 @@
         public Task Connect() {
             this.websocket = new OBSWebsocket();
             this.websocket.Connect($"ws://127.0.0.1:4444", string.Empty);
+
             this.LoadScenes();
+
+            Console.WriteLine("\nValid scenes:");
+            this.scenes.ForEach(scene => Console.WriteLine($"  {scene}"));
+            Console.WriteLine();
+
             this.websocket.SceneChanged += (_, scene) => this.SceneChanged?.Invoke(this, scene);
 
             return Task.CompletedTask;
@@ -36,7 +44,7 @@
         }
 
         public void ChangeScene(string scene, int delay = 0) {
-            if (!this.validScenes.Contains(scene)) {
+            if (!this.scenes.Contains(scene)) {
                 Console.WriteLine($"  OBS scene named \"{scene}\" does not exist");
                 return;
             }
@@ -46,6 +54,10 @@
             } else {
                 Task.Delay(delay).ContinueWith(t => this.websocket.SetCurrentScene(scene));
             }
+        }
+
+        public void SetAudioSources(List<string> sources) {
+            this.variableAudioSources.ForEach(source => this.websocket.SetMute(source, !sources.Contains(source)));
         }
 
         public ISet<string> GetSceneSources(string scene) {
@@ -72,16 +84,8 @@
 
         private void LoadScenes() {
             var scenes = this.websocket.GetSceneList().Scenes;
-            this.validScenes = scenes.Select(s => s.Name).ToList();
+            this.scenes = new List<string>(scenes.Select(s => s.Name).ToList());
             this.sceneSources = scenes.ToDictionary(s => s.Name, s => s.Items.Select(s => s.SourceName).ToHashSet());
-
-            Console.WriteLine();
-            Console.WriteLine("Valid scenes:");
-            foreach (var scene in this.websocket.GetSceneList().Scenes) {
-                Console.WriteLine($"  {scene.Name}");
-            }
-
-            Console.WriteLine();
         }
     }
 }
