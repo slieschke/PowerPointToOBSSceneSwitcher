@@ -58,22 +58,38 @@
 
             IDictionary<string, string> commands = GetSlideCommands(window.View.Slide);
             if (currentSlideNumber < previousSlideNumber) {
-                // Went back a slide
+                // Went back a slide; figure out the previous video and audio that was used
+                IDictionary<string, string> previousSlideCommands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[previousSlideNumber]);
+
+                string[] videoCommands = { "VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY", "VIDEO" };
+
+                bool ContainsVideoCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(videoCommands.Contains) != null;
+                bool ContainsAudioCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(key => key == "AUDIO") != null;
+
+                // If the previous slide didn't change the video or audio the current audio or video is already correct.
+                bool foundVideoCommand = !ContainsVideoCommand(previousSlideCommands);
+                bool foundAudioCommand = !ContainsAudioCommand(previousSlideCommands);
+
                 int i = currentSlideNumber;
+                IDictionary<string, string> backCommands = new Dictionary<string, string>();
+                while (!foundVideoCommand || !foundAudioCommand || i > 0) {
+                    commands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[i--]);
 
-                // Find the previous slide that had commands
-                while (!commands.Any()) {
-                    commands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[i]);
-                    i--;
+                    if (ContainsVideoCommand(commands)) {
+                        foundVideoCommand = true;
+                        string lastVideoCommand = videoCommands.First(commands.Keys.Contains);
+
+                        // Use the last video command immediately.
+                        backCommands["VIDEO"] = commands[lastVideoCommand];
+                    }
+
+                    if (ContainsAudioCommand(commands)) {
+                        foundAudioCommand = true;
+                        backCommands["AUDIO"] = commands["AUDIO"];
+                    }
                 }
 
-                // If there is any VIDEO-*-DELAY command, switch to that scene immediately, ignoring any VIDEO command
-                string[] delayCommands = { "VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY" };
-                if (commands.Keys.Intersect(delayCommands).Count() > 0) {
-                    commands["VIDEO"] = commands["VIDEO-LONG-DELAY"] ?? commands["VIDEO-SHORT-DELAY"];
-                    commands.Remove("VIDEO-LONG-DELAY");
-                    commands.Remove("VIDEO-SHORT-DELAY");
-                }
+                commands = backCommands;
             }
 
             foreach (var command in commands) {
