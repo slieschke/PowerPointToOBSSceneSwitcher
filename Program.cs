@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Net.Http;
     using System.Text.Json;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
     using Microsoft.Office.Interop.PowerPoint;
@@ -110,8 +111,22 @@
                     case "PTZ":
                         PTZ(argument);
                         break;
+                    default:
+                        Console.WriteLine($"  Skipping invalid command \"{command.Key}:{command.Value}\"");
+                        break;
                 }
             }
+        }
+
+        private static List<string> ParseListArgument(string argument) {
+            return argument.Split(",").Select(s => s.Trim()).ToList();
+        }
+
+        private static string NormalizeWhitespace(string argument) {
+            // Remove any zero width spaces, and normalize any remaining consecutive whitespace to a single space.
+            var zeroWidthSpace = "\u200B";
+            var consecutiveWhitespacePattern = @"\s+";
+            return Regex.Replace(argument.Replace(zeroWidthSpace, string.Empty), consecutiveWhitespacePattern, " ");
         }
 
         private static IDictionary<string, string> GetSlideCommands(Slide slide) {
@@ -128,8 +143,12 @@
             IDictionary<string, string> commands = new Dictionary<string, string>();
             var noteReader = new StringReader(note);
             while ((line = noteReader.ReadLine()) != null) {
-                var parts = line.Split(':', 2);
-                commands[parts[0]] = parts[1];
+                var parts = NormalizeWhitespace(line).Split(':', 2);
+                if (parts.Length == 2) {
+                    commands[parts[0]] = parts[1];
+                } else {
+                    Console.WriteLine($"  Skipping invalid command \"{line}\"");
+                }
             }
 
             return commands;
