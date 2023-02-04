@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Whitespace is trimmed from command arguments.
 - Any case can now be used for commands.
 
 ### Fixed

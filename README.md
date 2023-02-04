@@ -13,7 +13,7 @@ All command names are case insensitive.
 Set the configured variable OBS audio sources to unmute. All other configured variable audio sources will be muted. Setting this to no value will mute all the variable audio sources.
 
 ```text
-AUDIO:<comma separated list of OBS audio source names>
+AUDIO: <comma separated list of OBS audio source names>
 ```
 
 ### VIDEO
@@ -21,14 +21,14 @@ AUDIO:<comma separated list of OBS audio source names>
 Set the OBS scene to display for a slide with:
 
 ```text
-VIDEO:<OBS scene name>
+VIDEO: <OBS scene name>
 ```
 
 Set the OBS scene to display for a slide after a delay period. If a PTZ camera scene (per below) exists with the same name as the OBS scene, that PTZ camera scene will be switched immediately on slide transition. This primes the camera to its new position to avoid the camera movement appearing on the stream.
 
 ```text
-VIDEO-LONG-DELAY:<OBS scene name>
-VIDEO-SHORT-DELAY:<OBS scene name>
+VIDEO-LONG-DELAY: <OBS scene name>
+VIDEO-SHORT-DELAY: <OBS scene name>
 ```
 
 ### PTZ
@@ -36,7 +36,7 @@ VIDEO-SHORT-DELAY:<OBS scene name>
 Change the PTZ camera scene with:
 
 ```text
-PTZ:<PTZ scene name from config.json>
+PTZ: <PTZ scene name from config.json>
 ```
 
 This command changes the scene the PTZ camera is set to by requesting a PTZ HTTP-CGI command URL. It can be used from a slide while OBS is not displaying a scene that uses the PTZ camera to prime the camera to a new scene. This avoids the PTZ camera scene change otherwise being broadcast to the livestream when switching to a OBS scene that uses the PTZ camera set to a different scene.

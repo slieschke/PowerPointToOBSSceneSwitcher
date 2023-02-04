@@ -93,7 +93,7 @@
             }
 
             foreach (var command in commands) {
-                var argument = command.Value.Trim();
+                var argument = command.Value;
                 switch (command.Key) {
                     case "AUDIO":
                         List<string> audioSources = ParseListArgument(argument);
@@ -157,7 +157,7 @@
             while ((line = noteReader.ReadLine()) != null) {
                 var parts = NormalizeWhitespace(line).Split(':', 2);
                 if (parts.Length == 2) {
-                    commands[parts[0].ToUpper().Trim()] = parts[1];
+                    commands[parts[0].ToUpper().Trim()] = parts[1].Trim();
                 } else {
                     Console.WriteLine($"  Skipping invalid command \"{line}\"");
                 }
