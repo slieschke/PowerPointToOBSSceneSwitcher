@@ -8,6 +8,7 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Flurl.Http;
+    using Humanizer;
     using Microsoft.Office.Interop.PowerPoint;
 
     internal class Program {
@@ -97,7 +98,7 @@
                 switch (command.Key) {
                     case "AUDIO":
                         List<string> audioSources = ParseListArgument(argument);
-                        Console.WriteLine($"  Setting audio sources to \"{string.Join(", ", audioSources)}\"");
+                        Console.WriteLine($"  Switching audio to {audioSources.Humanize(source => $"\"{source}\"")}");
                         obs.SetAudioSources(audioSources);
                         break;
                     case "VIDEO":
