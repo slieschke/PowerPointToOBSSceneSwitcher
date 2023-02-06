@@ -179,13 +179,8 @@
                 return;
             }
 
-            if (activeTallyLight != null) {
-                activeTallyLight.TurnOff();
-            }
-
-            if (liveTallyLight != null) {
-                liveTallyLight.TurnOn();
-            }
+            activeTallyLight?.TurnOff();
+            liveTallyLight?.TurnOn();
 
             activeTallyLight = liveTallyLight;
         }

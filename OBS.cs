@@ -7,9 +7,10 @@
     using OBSWebsocketDotNet;
 
     public class OBS : IDisposable {
+        private readonly List<string> variableAudioSources;
+
         private OBSWebsocket websocket;
         private List<string> scenes;
-        private List<string> variableAudioSources;
         private Dictionary<string, HashSet<string>> sceneSources;
         private bool disposedValue;
 
