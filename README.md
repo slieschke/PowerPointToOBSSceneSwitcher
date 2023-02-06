@@ -1,8 +1,13 @@
 # SceneSwitcher
 
-A .NET core based scene switcher that connects to OBS and changes scenes based on note metadata in PowerPoint. This requires [the obs-websocket server](https://github.com/Palakis/obs-websocket) to be installed and running in OBS.
+A .NET core based scene switcher that connects to OBS Studio and changes scenes based on note metadata in PowerPoint.
 
 This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has been customised and enhanced according to the needs of [Faith Lutheran Church Ottawa](https://faithottawa.ca)'s for livestreaming worship services.
+
+## Version Requirements
+
+- [OBS Studio](https://obsproject.com/) 27.2.4
+- [obs-websocket](https://github.com/Palakis/obs-websocket) 4.9.0, configured with 4444 for the server port and with an empty password in OBS
 
 ## Commands
 
