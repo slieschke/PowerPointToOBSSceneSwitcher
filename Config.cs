@@ -6,7 +6,7 @@
 
         public int ShortDelay { get; set; } = 2000;
 
-        public Dictionary<string, string> PtzPresets { get; set; }
+        public Dictionary<string, Dictionary<string, string>> PtzScenes { get; set; }
 
         public List<TallyLight> TallyLights { get; set; }
 

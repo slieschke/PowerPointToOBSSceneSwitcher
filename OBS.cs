@@ -44,17 +44,12 @@
             return this.websocket.GetCurrentScene().Name;
         }
 
-        public void ChangeScene(string scene, int delay = 0) {
-            if (!this.scenes.Contains(scene)) {
-                Console.WriteLine($"  OBS scene named \"{scene}\" does not exist");
-                return;
-            }
+        public bool HasScene(string scene) {
+            return this.scenes.Contains(scene);
+        }
 
-            if (delay == 0) {
-                this.websocket.SetCurrentScene(scene);
-            } else {
-                Task.Delay(delay).ContinueWith(t => this.websocket.SetCurrentScene(scene));
-            }
+        public void ChangeScene(string scene) {
+            this.websocket.SetCurrentScene(scene);
         }
 
         public void SetAudioSources(List<string> sources) {

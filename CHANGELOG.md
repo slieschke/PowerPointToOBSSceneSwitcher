@@ -2,14 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- Automatic PTZ scene switching: priming PTZ cameras to avoid scene changes getting broadcast to livestreams is now handled automatically.
+
 ### Changed
 
+- **BREAKING**: the `config.json` file format has changed:
+  - PTZ HTTP-CGI command URLs are no longer duplicated across SceneSwitcher and OBS configurations, allowing only one OBS scene to be configured per PTZ camera.
+  - Tally light configurations now reference an OBS scene instead of an OBS source.
 - Whitespace is trimmed from command arguments.
 - Any case can now be used for commands.
 
 ### Fixed
 
 - Navigating back through slides is now aware of `VIDEO` and `AUDIO` commands.
+
+### Removed
+
+- **BREAKING**: the `PTZ` command has been removed.
 
 ## [1.0.0] (2023-01-11)
 

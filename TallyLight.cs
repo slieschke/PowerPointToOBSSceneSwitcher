@@ -13,7 +13,7 @@
 
         public string LiveColor { get; set; }
 
-        public string ObsSource { get; set; }
+        public string ObsScene { get; set; }
 
         public static void SetSkipRequests(bool skip) {
             skipRequests = skip;
@@ -33,7 +33,7 @@
 
         private async void Toggle(string state, object queryParams) {
             var url = this.BaseUrl.SetQueryParams(queryParams);
-            Console.WriteLine($"  Turning {state} tally light for camera \"{this.ObsSource}\" - {url}");
+            Console.WriteLine($"  Turning {state} tally light for \"{this.ObsScene}\" camera");
 
             if (skipRequests) {
                 return;

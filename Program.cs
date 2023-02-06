@@ -102,30 +102,22 @@
                         obs.SetAudioSources(audioSources);
                         break;
                     case "VIDEO":
-                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\"");
-                        obs.ChangeScene(argument, 0);
+                        ExecuteVideoCommand(command.Key, argument, commands, currentSlideNumber);
                         break;
                     case "VIDEO-SHORT-DELAY":
-                        if (config.PtzPresets.ContainsKey(argument)) {
-                            PTZ(argument);
-                        }
-
-                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after short delay");
-                        obs.ChangeScene(argument, config.ShortDelay);
+                        Task.Delay(config.ShortDelay).ContinueWith(t => {
+                            Console.WriteLine($"  (short delay)");
+                            ExecuteVideoCommand(command.Key, argument, commands, currentSlideNumber);
+                        });
                         break;
                     case "VIDEO-LONG-DELAY":
-                        if (config.PtzPresets.ContainsKey(argument)) {
-                            PTZ(argument);
-                        }
-
-                        Console.WriteLine($"  Switching to OBS scene named \"{argument}\" after long delay");
-                        obs.ChangeScene(argument, config.LongDelay);
-                        break;
-                    case "PTZ":
-                        PTZ(argument);
+                        Task.Delay(config.LongDelay).ContinueWith(t => {
+                            Console.WriteLine($"  (long delay)");
+                            ExecuteVideoCommand(command.Key, argument, commands, currentSlideNumber);
+                        });
                         break;
                     default:
-                        Console.WriteLine($"  Skipping invalid command \"{command.Key}:{command.Value}\"");
+                        WriteError($"Skipping invalid command \"{command.Key}:{command.Value}\"");
                         break;
                 }
             }
@@ -133,6 +125,61 @@
 
         private static List<string> ParseListArgument(string argument) {
             return argument.Split(",").Select(s => s.Trim()).ToList();
+        }
+
+        private static void ExecuteVideoCommand(string command, string argument, IDictionary<string, string> currentSlideCommands, int currentSlideNumber) {
+            Console.WriteLine($"  Switching video to \"{argument}\"");
+
+            string nextVideoCommandArgument = GetNextVideoCommandArgument(command, currentSlideCommands, currentSlideNumber);
+
+            string currentPtzCamera = GetPtzCamera(argument);
+            string nextPtzCamera = nextVideoCommandArgument != null ? GetPtzCamera(nextVideoCommandArgument) : null;
+
+            if (nextPtzCamera != null && nextPtzCamera != currentPtzCamera) {
+                // The next scene is from a PTZ camera, which is not used by the current scene.
+                // Prime the PTZ camera with the next scene it will display to avoid camera movement getting livestreamed.
+                PTZ(nextPtzCamera, nextVideoCommandArgument);
+            }
+
+            string scene = currentPtzCamera ?? argument;
+            if (currentPtzCamera != null) {
+                PTZ(currentPtzCamera, argument);
+            }
+
+            if (obs.HasScene(scene)) {
+                obs.ChangeScene(scene);
+            } else {
+                WriteError($"No video scene named \"{scene}\" exists");
+            }
+        }
+
+        private static string GetNextVideoCommandArgument(string currentVideoCommand, IDictionary<string, string> currentSlideCommands, int currentSlideNumber) {
+            string[] remainingVideoCommands;
+            if (currentVideoCommand == "VIDEO") {
+                remainingVideoCommands = new string[] { "VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY" };
+            } else if (currentVideoCommand == "VIDEO-SHORT-DELAY") {
+                remainingVideoCommands = new string[] { "VIDEO-LONG-DELAY" };
+            } else if (currentVideoCommand == "VIDEO-LONG-DELAY") {
+                remainingVideoCommands = Array.Empty<string>();
+            } else {
+                remainingVideoCommands = new string[] { "VIDEO", "VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY" };
+            }
+
+            foreach (var command in remainingVideoCommands) {
+                if (currentVideoCommand != command && currentSlideCommands.TryGetValue(command, out string argument)) {
+                    return argument;
+                }
+            }
+
+            if (currentSlideNumber == PowerPoint.ActivePresentation.Slides.Count) {
+                return null;
+            }
+
+            return GetNextVideoCommandArgument(null, GetSlideCommands(PowerPoint.ActivePresentation.Slides[currentSlideNumber + 1]), currentSlideNumber + 1);
+        }
+
+        private static string GetPtzCamera(string preset) {
+            return config.PtzScenes.Keys.FirstOrDefault(scene => config.PtzScenes[scene].ContainsKey(preset));
         }
 
         private static string NormalizeWhitespace(string argument) {
@@ -160,7 +207,7 @@
                 if (parts.Length == 2) {
                     commands[parts[0].ToUpper().Trim()] = parts[1].Trim();
                 } else {
-                    Console.WriteLine($"  Skipping invalid command \"{line}\"");
+                    WriteError($"Invalid command \"{line}\" on slide {slide.SlideNumber}");
                 }
             }
 
@@ -174,7 +221,7 @@
 
         private static void SetTallyLightScene(string scene) {
             var sceneSources = obs.GetSceneSources(scene);
-            var liveTallyLight = config.TallyLights.FirstOrDefault(tallyLight => sceneSources.Contains(tallyLight.ObsSource));
+            var liveTallyLight = config.TallyLights.FirstOrDefault(tallyLight => tallyLight.ObsScene == scene);
             if (activeTallyLight == liveTallyLight) {
                 return;
             }
@@ -185,16 +232,10 @@
             activeTallyLight = liveTallyLight;
         }
 
-        private static async void PTZ(string line) {
-            Console.Write($"  Switching to PTZ camera preset named \"{line}\"");
-            if (!config.PtzPresets.ContainsKey(line)) {
-                Console.WriteLine();
-                Console.WriteLine($"  PTZ preset named \"{line}\" does not exist");
-                return;
-            }
+        private static async void PTZ(string camera, string preset) {
+            var httpCgiUrl = config.PtzScenes[camera][preset];
 
-            var httpCgiUrl = config.PtzPresets[line];
-            Console.WriteLine($" - {httpCgiUrl}");
+            Console.WriteLine($"  Setting \"{camera}\" camera to \"{preset}\" preset");
 
             if (skipPtzRequests) {
                 return;
@@ -204,8 +245,12 @@
                 var responseBody = await httpCgiUrl.GetAsync();
                 Console.WriteLine(responseBody);
             } catch (FlurlHttpException ex) {
-                Console.WriteLine($"  ERROR: {ex.Message}");
+                WriteError(ex.Message);
             }
+        }
+
+        private static void WriteError(string message) {
+            Console.Error.WriteLine($"  ERROR: {message}");
         }
     }
 }
