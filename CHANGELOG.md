@@ -16,6 +16,7 @@
 
 ### Fixed
 
+- Provided a useful error message on start failure when OBS Studio is not open.
 - Navigating back through slides is now aware of `VIDEO` and `AUDIO` commands.
 
 ### Removed

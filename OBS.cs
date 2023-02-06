@@ -29,7 +29,13 @@
             this.websocket = new OBSWebsocket();
             this.websocket.Connect($"ws://127.0.0.1:4444", string.Empty);
 
-            this.LoadScenes();
+            try {
+                this.LoadScenes();
+            } catch (System.InvalidOperationException) {
+                Console.Error.WriteLine("\nFailed to connect to OBS Studio; check it is running and obs-websocket is correctly configured.\nPress any key to exit.");
+                Console.ReadKey();
+                Environment.Exit(1);
+            }
 
             Console.WriteLine("\nValid scenes:");
             this.scenes.ForEach(scene => Console.WriteLine($"  {scene}"));
