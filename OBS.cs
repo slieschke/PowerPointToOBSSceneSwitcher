@@ -7,15 +7,15 @@
     using OBSWebsocketDotNet;
 
     public class OBS : IDisposable {
-        private readonly List<string> variableAudioSources;
+        private readonly Config config;
 
         private OBSWebsocket websocket;
         private List<string> scenes;
         private Dictionary<string, HashSet<string>> sceneSources;
         private bool disposedValue;
 
-        public OBS(List<string> variableAudioSources) {
-            this.variableAudioSources = variableAudioSources;
+        public OBS(Config config) {
+            this.config = config;
         }
 
         ~OBS() {
@@ -27,12 +27,18 @@
 
         public Task Connect() {
             this.websocket = new OBSWebsocket();
-            this.websocket.Connect($"ws://127.0.0.1:4444", string.Empty);
+
+            WebSocketConfig wsc = this.config.WebSocketConfig;
+            try {
+                this.websocket.Connect($"ws://{wsc.Host}:{wsc.Port}", wsc.Password);
+            } catch (OBSWebsocketDotNet.AuthFailureException) {
+                this.ExitOnConnectError("Check your obs-websocket password has been correctly configured.");
+            }
 
             try {
                 this.LoadScenes();
             } catch (System.InvalidOperationException) {
-                Console.Error.WriteLine("\nFailed to connect to OBS Studio; check it is running and obs-websocket is correctly configured.\nPress any key to exit.");
+                this.ExitOnConnectError("Check it has been started, it can be reached via the network, and your obs-websocket host and port have been correctly configured.");
                 Console.ReadKey();
                 Environment.Exit(1);
             }
@@ -59,7 +65,7 @@
         }
 
         public void SetAudioSources(List<string> sources) {
-            this.variableAudioSources.ForEach(source => this.websocket.SetMute(source, !sources.Contains(source)));
+            this.config.VariableAudioSources.ForEach(source => this.websocket.SetMute(source, !sources.Contains(source)));
         }
 
         public ISet<string> GetSceneSources(string scene) {
@@ -82,6 +88,12 @@
                 this.websocket = null;
                 this.disposedValue = true;
             }
+        }
+
+        private void ExitOnConnectError(string message) {
+            Console.Error.WriteLine($"\nFailed to connect to OBS Studio. {message}\nPress any key to exit.");
+            Console.ReadKey();
+            Environment.Exit(1);
         }
 
         private void LoadScenes() {

@@ -5,6 +5,7 @@
 ### Added
 
 - Automatic PTZ scene switching: priming PTZ cameras to avoid scene changes getting broadcast to livestreams is now handled automatically.
+- The obs-websocket host, port and password can now be configured.
 
 ### Changed
 

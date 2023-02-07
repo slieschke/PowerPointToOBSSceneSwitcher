@@ -11,5 +11,7 @@
         public List<TallyLight> TallyLights { get; set; }
 
         public List<string> VariableAudioSources { get; set; }
+
+        public WebSocketConfig WebSocketConfig { get; set; } = new WebSocketConfig();
     }
 }

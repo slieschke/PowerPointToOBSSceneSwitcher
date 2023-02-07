@@ -2,12 +2,12 @@
 
 A .NET core based scene switcher that connects to OBS Studio and changes scenes based on note metadata in PowerPoint.
 
-This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has been customised and enhanced according to the needs of [Faith Lutheran Church Ottawa](https://faithottawa.ca)'s for livestreaming worship services.
+This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has been customised and enhanced according to [Faith Lutheran Church Ottawa]'s needs for livestreaming worship services.
 
 ## Version Requirements
 
-- [OBS Studio](https://obsproject.com/) 27.2.4
-- [obs-websocket](https://github.com/Palakis/obs-websocket) 4.9.0, configured with 4444 for the server port and with an empty password in OBS
+- [OBS Studio] 27.2.4
+- [obs-websocket] 4.9.0
 
 ## Commands
 
@@ -57,8 +57,9 @@ SceneSwitcher is configured through a `config.json` file contained in the same d
 | `longDelay`            | The delay period in milliseconds to wait when switching to an OBS scene with the VIDEO-LONG-DELAY command. Optional; defaults to `5000`.                                                                                                                                                             |
 | `shortDelay`           | The delay period in milliseconds to wait when switching to an OBS scene with the VIDEO-SHORT-DELAY command. Optional; defaults to `2000`.                                                                                                                                                            |
 | `ptzScenes`            | A mapping of OBS scene names that correspond to PTZ cameras to configuration that describes that camera's scenes. Each configuration is a mapping of PTZ scene names (that can be used with the `VIDEO*` commands) to the PTZ HTTP-CGI command URL that will switch to that scene on the PTZ camera. |
-| `tallyLights`          | A list of [tally light configurations](#tally-light-configuration) that can drive tally lights to indicate when a camera is live.                                                                                                                                                                    |
+| `tallyLights`          | A list of [tally light configuration]s that can drive tally lights to indicate when a camera is live.                                                                                                                                                                                                |
 | `variableAudioSources` | A list of OBS audio sources that can be controlled using the AUDIO command.                                                                                                                                                                                                                          |
+| `webSocketConfig`      | The [obs-websocket configuration]. Optional, will use the defaults documented in the web socket configuration.                                                                                                                                                                                       |
 
 ### Tally light Configuration
 
@@ -70,6 +71,14 @@ SceneSwitcher is configured through a `config.json` file contained in the same d
 | `obsScene`   | The OBS scene that the tally light will be turned on for when active.       |
 
 A tally light will be turned on using the above configuration by sending a request to `<baseUrl>?state=live&brightness=<brightness>&color=<liveColor>`, and turned off by sending a request to `<baseUrl>?state=off`.
+
+### obs-websocket configuration
+
+| Property   | Description                                                                              |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| `host`     | The host running OBS Studio. Optional, defaults to `127.0.0.1`.                          |
+| `port`     | The server port configured for obs-websocket. Optional, a number that defaults to `4444` |
+| `password` | The password configured for obs-websocket. Optional, defaults to an empty string.        |
 
 ### Example
 
@@ -98,6 +107,16 @@ A tally light will be turned on using the above configuration by sending a reque
       "liveColor": "FF0000",
       "obsScene": "DeskCam"
     }
-  ]
+  ],
+  "webSocketConfig": {
+    "port": 4444,
+    "password": "53cr375qu1rr3l"
+  }
 }
 ```
+
+[faith lutheran church ottawa]: https://faithottawa.ca
+[obs studio]: https://obsproject.com/
+[obs-websocket configuration]: #obs-websocket-configuration
+[obs-websocket]: https://github.com/Palakis/obs-websocket
+[tally light configuration]: #tally-light-configuration

@@ -37,7 +37,7 @@
             PowerPoint.SlideShowNextSlide += NextSlide;
 
             Console.WriteLine("Connecting to OBS...");
-            obs = new OBS(config.VariableAudioSources);
+            obs = new OBS(config);
             await obs.Connect();
             obs.SceneChanged += NextScene;
             var currentScene = obs.GetCurrentScene();
