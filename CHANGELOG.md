@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [2.0.1] (2023-02-18)
 
 ### Fixed
 
@@ -35,7 +35,8 @@
 
 Initial release.
 
-[2.0.0]: https://github.com/slieschke/SceneSwitcher/compare/1.0.0...2.0.0
-[1.0.0]: https://github.com/slieschke/SceneSwitcher/compare/8289a2d4...1.0.0
+[2.0.1]: https://github.com/slieschke/SceneSwitcher/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/slieschke/SceneSwitcher/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/slieschke/SceneSwitcher/compare/8289a2d4...v1.0.0
 
 <!-- markdownlint-configure-file { "MD024": { "siblings_only": true } } -->
