@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Video and audio is now set correctly when jumping forward slides in certain situations.
+
 ## [2.0.1] (2023-02-18)
 
 ### Fixed

@@ -58,7 +58,7 @@
             Console.WriteLine($"Moved to slide {currentSlideNumber}");
 
             IDictionary<string, string> commands = GetSlideCommands(window.View.Slide);
-            if (currentSlideNumber < previousSlideNumber) {
+            if (currentSlideNumber != previousSlideNumber + 1) {
                 // Went back a slide, or jumped to a slide; figure out the previous video and audio that was used
                 IDictionary<string, string> previousSlideCommands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[previousSlideNumber]);
 
