@@ -42,7 +42,7 @@
             try {
                 await url.GetAsync();
             } catch (FlurlHttpException ex) {
-                Console.WriteLine($"  ERROR: {ex.Message}");
+                Console.Error.WriteLine($"  ERROR: {ex.Message}");
             }
         }
     }

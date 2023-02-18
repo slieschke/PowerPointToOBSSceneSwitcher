@@ -242,8 +242,7 @@
             }
 
             try {
-                var responseBody = await httpCgiUrl.GetAsync();
-                Console.WriteLine(responseBody);
+                await httpCgiUrl.GetAsync();
             } catch (FlurlHttpException ex) {
                 WriteError(ex.Message);
             }
