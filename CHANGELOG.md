@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- The expected video and audio scenes are now set when going back or jumping slides.
 - "Flurl.Http.FlurlResponse" is no longer logged when changing PTZ scenes.
 
 ## [2.0.0] (2023-02-08)

@@ -59,7 +59,7 @@
 
             IDictionary<string, string> commands = GetSlideCommands(window.View.Slide);
             if (currentSlideNumber < previousSlideNumber) {
-                // Went back a slide; figure out the previous video and audio that was used
+                // Went back a slide, or jumped to a slide; figure out the previous video and audio that was used
                 IDictionary<string, string> previousSlideCommands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[previousSlideNumber]);
 
                 string[] videoCommands = { "VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY", "VIDEO" };
@@ -67,16 +67,17 @@
                 bool ContainsVideoCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(videoCommands.Contains) != null;
                 bool ContainsAudioCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(key => key == "AUDIO") != null;
 
-                // If the previous slide didn't change the video or audio the current audio or video is already correct.
-                bool foundVideoCommand = !ContainsVideoCommand(previousSlideCommands);
-                bool foundAudioCommand = !ContainsAudioCommand(previousSlideCommands);
+                // If going back one slide, the video or audio will already be correct if the previous slide didn't change video or audio respectively.
+                bool wentBackOneSlide = currentSlideNumber == previousSlideNumber - 1;
+                bool foundVideoCommand = wentBackOneSlide && !ContainsVideoCommand(previousSlideCommands);
+                bool foundAudioCommand = wentBackOneSlide && !ContainsAudioCommand(previousSlideCommands);
 
                 int i = currentSlideNumber;
                 IDictionary<string, string> backCommands = new Dictionary<string, string>();
-                while (!foundVideoCommand || !foundAudioCommand || i > 0) {
+                while (i > 0 && !(foundVideoCommand && foundAudioCommand)) {
                     commands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[i--]);
 
-                    if (ContainsVideoCommand(commands)) {
+                    if (!foundVideoCommand && ContainsVideoCommand(commands)) {
                         foundVideoCommand = true;
                         string lastVideoCommand = videoCommands.First(commands.Keys.Contains);
 
@@ -84,7 +85,7 @@
                         backCommands["VIDEO"] = commands[lastVideoCommand];
                     }
 
-                    if (ContainsAudioCommand(commands)) {
+                    if (!foundAudioCommand && ContainsAudioCommand(commands)) {
                         foundAudioCommand = true;
                         backCommands["AUDIO"] = commands["AUDIO"];
                     }
