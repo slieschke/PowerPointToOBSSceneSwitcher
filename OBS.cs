@@ -25,35 +25,27 @@
 
         public event EventHandler<string> SceneChanged;
 
-        public Task Connect() {
+        public void Connect() {
             this.websocket = new OBSWebsocket();
+            this.websocket.Connected += this.OnConnect;
+            this.websocket.CurrentProgramSceneChanged += (_, args) => this.SceneChanged?.Invoke(this, args.SceneName);
 
             WebSocketConfig wsc = this.config.WebSocketConfig;
+            string url = $"ws://{wsc.Host}:{wsc.Port}";
             try {
-                this.websocket.Connect($"ws://{wsc.Host}:{wsc.Port}", wsc.Password);
-            } catch (OBSWebsocketDotNet.AuthFailureException) {
-                this.ExitOnConnectError("Check your obs-websocket password has been correctly configured.");
+                this.websocket.ConnectAsync(url, wsc.Password);
+            } catch (Exception) {
+                this.ExitOnConnectError();
             }
 
-            try {
-                this.LoadScenes();
-            } catch (System.InvalidOperationException) {
-                this.ExitOnConnectError("Check it has been started, it can be reached via the network, and your obs-websocket host and port have been correctly configured.");
-                Console.ReadKey();
-                Environment.Exit(1);
-            }
-
-            Console.WriteLine("\nValid scenes:");
-            this.scenes.ForEach(scene => Console.WriteLine($"  {scene}"));
-            Console.WriteLine();
-
-            this.websocket.SceneChanged += (_, scene) => this.SceneChanged?.Invoke(this, scene);
-
-            return Task.CompletedTask;
-        }
-
-        public string GetCurrentScene() {
-            return this.websocket.GetCurrentScene().Name;
+            // No exception appears to be thrown on failed connections. Workaround by
+            // timing out if not connected after some amount of time.
+            Task.Run(async () => {
+                await Task.Delay(10000);
+                if (!this.websocket.IsConnected) {
+                    this.ExitOnConnectError();
+                }
+            });
         }
 
         public bool HasScene(string scene) {
@@ -61,11 +53,11 @@
         }
 
         public void ChangeScene(string scene) {
-            this.websocket.SetCurrentScene(scene);
+            this.websocket.SetCurrentProgramScene(scene);
         }
 
         public void SetAudioSources(List<string> sources) {
-            this.config.VariableAudioSources.ForEach(source => this.websocket.SetMute(source, !sources.Contains(source)));
+            this.config.VariableAudioSources.ForEach(source => this.websocket.SetInputMute(source, !sources.Contains(source)));
         }
 
         public ISet<string> GetSceneSources(string scene) {
@@ -80,18 +72,23 @@
 
         protected virtual void Dispose(bool disposing) {
             if (!this.disposedValue) {
-                if (disposing) {
-                    // TODO: dispose managed state (managed objects)
-                }
-
                 this.websocket.Disconnect();
                 this.websocket = null;
                 this.disposedValue = true;
             }
         }
 
-        private void ExitOnConnectError(string message) {
-            Console.Error.WriteLine($"\nFailed to connect to OBS Studio. {message}\nPress any key to exit.");
+        private void OnConnect(object sender, EventArgs args) {
+            this.LoadScenes();
+
+            Console.WriteLine("\nValid scenes:");
+            this.scenes.ForEach(scene => Console.WriteLine($"  {scene}"));
+            Console.WriteLine();
+            Console.WriteLine($"Current OBS scene is \"{this.websocket.GetCurrentProgramScene()}\"");
+        }
+
+        private void ExitOnConnectError() {
+            Console.Error.WriteLine($"\nFailed to connect to OBS Studio. Check it has been started, it can be reached via the network, and the WebSocketConfig has been correctly configured.\nPress any key to exit.");
             Console.ReadKey();
             Environment.Exit(1);
         }
@@ -99,7 +96,9 @@
         private void LoadScenes() {
             var scenes = this.websocket.GetSceneList().Scenes;
             this.scenes = new List<string>(scenes.Select(s => s.Name).ToList());
-            this.sceneSources = scenes.ToDictionary(s => s.Name, s => s.Items.Select(s => s.SourceName).ToHashSet());
+            this.sceneSources = scenes.ToDictionary(
+                s => s.Name,
+                s => this.websocket.GetSceneItemList(s.Name).Select(s => s.SourceName).ToHashSet());
         }
     }
 }

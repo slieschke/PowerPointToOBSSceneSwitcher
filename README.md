@@ -6,8 +6,7 @@ This fork of <https://github.com/shanselman/PowerPointToOBSSceneSwitcher> has be
 
 ## Version Requirements
 
-- [OBS Studio] 27.2.4
-- [obs-websocket] 4.9.0
+- [OBS Studio] 30.0.2
 
 ## Commands
 
@@ -118,5 +117,4 @@ A tally light will be turned on using the above configuration by sending a reque
 [faith lutheran church ottawa]: https://faithottawa.ca
 [obs studio]: https://obsproject.com/
 [obs-websocket configuration]: #obs-websocket-configuration
-[obs-websocket]: https://github.com/Palakis/obs-websocket
 [tally light configuration]: #tally-light-configuration

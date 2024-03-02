@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **BREAKING**: SceneSwitcher now requires OBS 30.0.2 or later to run.
+
 ## [2.0.2] (2023-02-18)
 
 ### Fixed

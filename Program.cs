@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Text.Json;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using System.Threading.Tasks;
     using Flurl.Http;
     using Humanizer;
@@ -21,7 +22,7 @@
         private static OBS obs;
         private static TallyLight activeTallyLight;
 
-        private static async Task Main(string[] args) {
+        private static void Main(string[] args) {
             var argList = new List<string>(args);
 
             // For testing at home
@@ -38,14 +39,15 @@
 
             Console.WriteLine("Connecting to OBS...");
             obs = new OBS(config);
-            await obs.Connect();
             obs.SceneChanged += NextScene;
-            var currentScene = obs.GetCurrentScene();
+            obs.Connect();
 
-            Console.WriteLine($"Current OBS scene is \"{currentScene}\"");
             config.TallyLights.ForEach(tallyLight => tallyLight.TurnOff());
 
-            Console.ReadLine();
+            while (true) {
+                // Sleep forever while the OBS connection responds to events
+                Thread.Sleep(Timeout.Infinite);
+            }
         }
 
         private static void NextSlide(SlideShowWindow window) {
@@ -137,7 +139,7 @@
             string nextPtzCamera = nextVideoCommandArgument != null ? GetPtzCamera(nextVideoCommandArgument) : null;
 
             if (nextPtzCamera != null && nextPtzCamera != currentPtzCamera) {
-                // The next scene is from a PTZ camera, which is not used by the current scene.
+                // The next scene is from a PTZ camera, which is not used to display the current scene.
                 // Prime the PTZ camera with the next scene it will display to avoid camera movement getting livestreamed.
                 PTZ(nextPtzCamera, nextVideoCommandArgument);
             }
