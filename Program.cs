@@ -13,7 +13,7 @@
     using Microsoft.Office.Interop.PowerPoint;
 
     internal class Program {
-        private static readonly Application PowerPoint = new Application();
+        private static readonly Application PowerPoint = new();
 
         private static bool skipPtzRequests;
         private static int currentSlideNumber;
@@ -64,7 +64,7 @@
                 // Went back a slide, or jumped to a slide; figure out the previous video and audio that was used
                 IDictionary<string, string> previousSlideCommands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[previousSlideNumber]);
 
-                string[] videoCommands = { "VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY", "VIDEO" };
+                string[] videoCommands = ["VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY", "VIDEO"];
 
                 bool ContainsVideoCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(videoCommands.Contains) != null;
                 bool ContainsAudioCommand(IDictionary<string, string> commands) => commands.Keys.FirstOrDefault(key => key == "AUDIO") != null;
@@ -159,13 +159,13 @@
         private static string GetNextVideoCommandArgument(string currentVideoCommand, IDictionary<string, string> currentSlideCommands, int currentSlideNumber) {
             string[] remainingVideoCommands;
             if (currentVideoCommand == "VIDEO") {
-                remainingVideoCommands = new string[] { "VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY" };
+                remainingVideoCommands = ["VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY"];
             } else if (currentVideoCommand == "VIDEO-SHORT-DELAY") {
-                remainingVideoCommands = new string[] { "VIDEO-LONG-DELAY" };
+                remainingVideoCommands = ["VIDEO-LONG-DELAY"];
             } else if (currentVideoCommand == "VIDEO-LONG-DELAY") {
-                remainingVideoCommands = Array.Empty<string>();
+                remainingVideoCommands = [];
             } else {
-                remainingVideoCommands = new string[] { "VIDEO", "VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY" };
+                remainingVideoCommands = ["VIDEO", "VIDEO-SHORT-DELAY", "VIDEO-LONG-DELAY"];
             }
 
             foreach (var command in remainingVideoCommands) {

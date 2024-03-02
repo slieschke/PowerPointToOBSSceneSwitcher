@@ -20,20 +20,20 @@
         }
 
         public void TurnOn() {
-            this.Toggle("on", new {
-                brightness = this.Brightness,
-                color = this.LiveColor,
+            Toggle("on", new {
+                brightness = Brightness,
+                color = LiveColor,
                 state = "live",
             });
         }
 
         public void TurnOff() {
-            this.Toggle("off", new { state = "off" });
+            Toggle("off", new { state = "off" });
         }
 
         private async void Toggle(string state, object queryParams) {
-            var url = this.BaseUrl.SetQueryParams(queryParams);
-            Console.WriteLine($"  Turning {state} tally light for \"{this.ObsScene}\" camera");
+            var url = BaseUrl.SetQueryParams(queryParams);
+            Console.WriteLine($"  Turning {state} tally light for \"{ObsScene}\" camera");
 
             if (skipRequests) {
                 return;
