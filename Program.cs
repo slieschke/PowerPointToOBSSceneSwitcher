@@ -62,7 +62,7 @@
             IDictionary<string, string> commands = GetSlideCommands(window.View.Slide);
             if (currentSlideNumber != previousSlideNumber + 1) {
                 // Went back a slide, or jumped to a slide; figure out the previous video and audio that was used
-                IDictionary<string, string> previousSlideCommands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[previousSlideNumber]);
+                IDictionary<string, string> previousSlideCommands = GetSlideCommands(window.Presentation.Slides[previousSlideNumber]);
 
                 string[] videoCommands = ["VIDEO-LONG-DELAY", "VIDEO-SHORT-DELAY", "VIDEO"];
 
@@ -77,7 +77,7 @@
                 int i = currentSlideNumber;
                 IDictionary<string, string> backCommands = new Dictionary<string, string>();
                 while (i > 0 && !(foundVideoCommand && foundAudioCommand)) {
-                    commands = GetSlideCommands(PowerPoint.ActivePresentation.Slides[i--]);
+                    commands = GetSlideCommands(window.Presentation.Slides[i--]);
 
                     if (!foundVideoCommand && ContainsVideoCommand(commands)) {
                         foundVideoCommand = true;

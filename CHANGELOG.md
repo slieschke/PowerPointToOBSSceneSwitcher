@@ -6,6 +6,10 @@
 
 - **BREAKING**: SceneSwitcher now requires OBS 30.0.2 or later to run.
 
+### Fixed
+
+- When an embedded slideshow is displayed the slideshow commands of the parent slideshow are not incorrectly triggered when advancing through the embedded slideshow.
+
 ## [2.0.2] (2023-02-18)
 
 ### Fixed
