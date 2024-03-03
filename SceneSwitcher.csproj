@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Version>2.0.2</Version>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
   <ItemGroup>
