@@ -43,6 +43,8 @@ VIDEO-SHORT-DELAY: <scene name>
 
 Whenever the video scene displayed is changed, the next immediate video scene is identified. If that video scene is a PTZ camera, and the current video scene isn't using the same PTZ camera, the PTZ scene will be primed at this point to otherwise avoid the PTZ scene change otherwise being broadcast to the livestream.
 
+If an OBS scene displays PowerPoint with an embedded live camera display, the scene name must start with `PowerPoint with` for the PTZ scene priming to work correctly.
+
 ## Local Testing
 
 Running `SceneSwitcher.exe skipAllRequests` will suppress the PTZ HTTP-CGI command and tally light URLs from being requested, allowing testing without emitting HTTP request errors to the console when no PTZ cameras and tally lights are present on the local network.

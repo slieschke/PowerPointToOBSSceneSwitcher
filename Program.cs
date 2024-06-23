@@ -14,6 +14,7 @@
 
     internal class Program {
         private static readonly Application PowerPoint = new();
+        private static readonly string EmbeddedVideoPrefix = "PowerPoint with ";
 
         private static bool skipPtzRequests;
         private static int currentSlideNumber;
@@ -133,22 +134,25 @@
         private static void ExecuteVideoCommand(string command, string argument, IDictionary<string, string> currentSlideCommands, int currentSlideNumber) {
             Console.WriteLine($"  Switching video to \"{argument}\"");
 
-            string nextVideoCommandArgument = GetNextVideoCommandArgument(command, currentSlideCommands, currentSlideNumber);
+            string currentPreset = argument.Replace(EmbeddedVideoPrefix, string.Empty);
+            string nextPreset = (GetNextVideoCommandArgument(command, currentSlideCommands, currentSlideNumber) ?? string.Empty)
+                .Replace(EmbeddedVideoPrefix, string.Empty);
 
-            string currentPtzCamera = GetPtzCamera(argument);
-            string nextPtzCamera = nextVideoCommandArgument != null ? GetPtzCamera(nextVideoCommandArgument) : null;
+            string currentPtzCamera = GetPtzCamera(currentPreset);
+            string nextPtzCamera = nextPreset != null ? GetPtzCamera(nextPreset) : null;
 
             if (nextPtzCamera != null && nextPtzCamera != currentPtzCamera) {
                 // The next scene is from a PTZ camera, which is not used to display the current scene.
                 // Prime the PTZ camera with the next scene it will display to avoid camera movement getting livestreamed.
-                PTZ(nextPtzCamera, nextVideoCommandArgument);
+                PTZ(nextPtzCamera, nextPreset);
             }
 
-            string scene = currentPtzCamera ?? argument;
             if (currentPtzCamera != null) {
-                PTZ(currentPtzCamera, argument);
+                PTZ(currentPtzCamera, currentPreset);
             }
 
+            string scene = currentPtzCamera != null && !argument.StartsWith(EmbeddedVideoPrefix) ? currentPtzCamera : argument;
+            Console.WriteLine($"  Switching OBS to \"{scene}\"");
             if (obs.HasScene(scene)) {
                 obs.ChangeScene(scene);
             } else {
