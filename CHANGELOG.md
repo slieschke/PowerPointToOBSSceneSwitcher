@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- PTZ camera priming has been fixed to work correctly with OBS scenes containing an embedded PTZ camera scene.
+
 ## [3.0.0] (2024-03-02)
 
 ### Changed
