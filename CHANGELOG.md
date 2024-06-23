@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [3.0.1] (2024-04-27)
 
 ### Fixed
 
@@ -57,6 +57,7 @@
 
 Initial release.
 
+[3.0.1]: https://github.com/slieschke/SceneSwitcher/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/slieschke/SceneSwitcher/compare/v2.0.2...v3.0.0
 [2.0.2]: https://github.com/slieschke/SceneSwitcher/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/slieschke/SceneSwitcher/compare/v2.0.0...v2.0.1
