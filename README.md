@@ -20,6 +20,8 @@ Set the configured variable OBS audio sources to unmute. All other configured va
 AUDIO: <comma separated list of OBS audio source names>
 ```
 
+If an OBS source name to set begins with a number prefix (e.g. `1.`, `2.`), that number prefix can be omitted from the source name passed to the `AUDIO` command.
+
 ### VIDEO
 
 Set the video to display for a slide with:
