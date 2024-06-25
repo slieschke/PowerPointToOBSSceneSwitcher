@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Allow number prefixes in OBS audio source names (e.g. `1.`, `2.`) to be omitted from audio source names passed to the `AUDIO` command.
+
 ## [3.0.1] (2024-04-27)
 
 ### Fixed

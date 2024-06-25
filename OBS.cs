@@ -2,11 +2,15 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
     using OBSWebsocketDotNet;
 
-    public class OBS(Config config) : IDisposable {
+    /// <summary>
+    /// Main program class.
+    /// </summary>
+    public partial class OBS(Config config) : IDisposable {
         private readonly Config config = config;
 
         private OBSWebsocket websocket;
@@ -53,7 +57,7 @@
         }
 
         public void SetAudioSources(List<string> sources) {
-            config.VariableAudioSources.ForEach(source => websocket.SetInputMute(source, !sources.Contains(source)));
+            config.VariableAudioSources.ForEach(source => websocket.SetInputMute(source, !sources.Contains(PrefixedNumberRegex().Replace(source, string.Empty))));
         }
 
         public ISet<string> GetSceneSources(string scene) {
@@ -73,6 +77,9 @@
                 disposedValue = true;
             }
         }
+
+        [GeneratedRegex(@"^\d+\.\s*")]
+        private static partial Regex PrefixedNumberRegex();
 
         private static void ExitOnConnectError() {
             Console.Error.WriteLine($"\nFailed to connect to OBS Studio. Check it has been started, it can be reached via the network, and the WebSocketConfig has been correctly configured.\nPress any key to exit.");
